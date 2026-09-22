@@ -1,3 +1,5 @@
+import tkinter as tk
+
 _EMPTY = " "
 _NUMBER_OF_CATEGORIES = 6
 _NUMBER_OF_QUESTIONS = 5
@@ -34,7 +36,13 @@ class JeopardyBoard:
                 self.board[i][j] = {"question": self.questions[i * _NUMBER_OF_QUESTIONS + j - 1],
                                     "answer": self.answers[i * _NUMBER_OF_QUESTIONS + j - 1],
                                     "value": self.values[i * _NUMBER_OF_QUESTIONS + j - 1]}
-        
+
+    def display_board(self):
+        root = tk.Tk()
+        root.title("Jeopardy Board")
+        root.geometry("1600x1200")
+        root.configure(bg="blue")
+        root.mainloop()
 
 
 
@@ -43,5 +51,6 @@ if __name__ == "__main__":
     question_set = "questions.jeo"
     jeopardy_board = JeopardyBoard(question_set)
     jeopardy_board.initialize_board()
+    jeopardy_board.display_board()
     #print(jeopardy_board.board[1][1]["question"])  # Print the first question
     #print(jeopardy_board.board)
