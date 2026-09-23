@@ -5,6 +5,12 @@ import input_handler as ih
 _EMPTY = " "
 _NUMBER_OF_CATEGORIES = 6
 _NUMBER_OF_QUESTIONS = 5
+_BOARD_WIDTH = 1500
+_BOARD_HEIGHT = 800
+_BOARD_COLOR = "blue"
+_BOARD_DIMENSIONS = str(_BOARD_WIDTH) + "x" + str(_BOARD_HEIGHT)
+_RECTANGLE_WIDTH = _BOARD_WIDTH / _NUMBER_OF_CATEGORIES
+_RECTANGLE_HEIGHT = _BOARD_HEIGHT / (_NUMBER_OF_QUESTIONS + 1)  # +1 for category row
 
 class JeopardyBoard:
     def __init__(self, question_set):
@@ -44,16 +50,6 @@ class JeopardyBoard:
                                     "answer": self.answers[i * _NUMBER_OF_QUESTIONS + j - 1],
                                     "value": self.values[i * _NUMBER_OF_QUESTIONS + j - 1]}
 
-    def question_on_click(self):
-        # This method will be called when the button is clicked
-        self.board[self.selected_category_index][self.selected_question_index + 1] = _EMPTY  # Mark the question as chosen
-        self.display_question()  # Select the first question in the second category
-        pass
-
-    def answer_on_click(self):
-        # This method will be called when the answer button is clicked
-        self.display_answer()
-
     def handle_key_press(self, event):
         input_handler = ih.InputHandler()
 
@@ -72,17 +68,27 @@ class JeopardyBoard:
             self.question_is_selected = True
             print(f"Selected Category: {self.selected_category_index}, Selected Question: {self.selected_question_index}")
             self.display_question()
-            
 
     def display_board(self):
         # Create the main window
         root = tk.Tk()
         root.title("Jeopardy Board")
-        root.geometry("1600x1200")
-        root.configure(bg="blue")
-        #button = tk.Button(root, text="Click Me", command=self.question_on_click, bg="blue", fg="blue")
+        root.geometry(_BOARD_DIMENSIONS)
+        root.configure(bg=_BOARD_COLOR)
         root.bind("<Key>", self.handle_key_press)
-        #button.pack(pady=20)
+        canvas = tk.Canvas(root, width=_BOARD_WIDTH, height=_BOARD_HEIGHT, bg=_BOARD_COLOR)
+        canvas.pack()
+        for i in range(_NUMBER_OF_CATEGORIES):
+            for j in range(_NUMBER_OF_QUESTIONS + 1):  # +1 for category row
+                x0 = i * _RECTANGLE_WIDTH
+                y0 = j * _RECTANGLE_HEIGHT
+                x1 = x0 + _RECTANGLE_WIDTH
+                y1 = y0 + _RECTANGLE_HEIGHT
+                canvas.create_rectangle(x0, y0, x1, y1, outline="black", fill="blue", width=3)
+                if j == 0:  # Category row
+                    canvas.create_text((x0 + x1) / 2, (y0 + y1) / 2, text=self.board[i][j], fill="white", font=("Arial", 20))
+                else:  # Question rows
+                    canvas.create_text((x0 + x1) / 2, (y0 + y1) / 2, text=f"${self.board[i][j]['value']}", fill="white", font=("Arial", 20))
         root.mainloop()
 
     def select_question(self, category_index, question_index):
@@ -93,18 +99,14 @@ class JeopardyBoard:
     def display_question(self):
         self.question_window = tk.Toplevel()
         self.question_window.title("Question")
-        self.question_window.geometry("1600x1200")
-        self.question_window.configure(bg="blue")
-        question_label = tk.Label(self.question_window, text=self.selected_question["question"], bg="blue", fg="white", font=("Arial", 16))
-        question_label.pack(pady=20)
+        self.question_window.geometry(_BOARD_DIMENSIONS)
+        self.question_window.configure(bg=_BOARD_COLOR)
+        question_label = tk.Label(self.question_window, text=self.selected_question["question"], bg=_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
+        question_label.pack(pady=150)
         self.question_window.bind("<Key>", self.handle_key_press)
-        #answer_button = tk.Button(self.question_window, text="Show Answer", command=self.answer_on_click, bg="blue", fg="blue")
-        #answer_button.pack(pady=20)
-        #close_button = tk.Button(self.question_window, text="Close", command=self.question_window.destroy, bg="blue", fg="blue")
-        #close_button.pack(pady=20)
 
     def display_answer(self):
-        answer_label = tk.Label(self.question_window, text=self.selected_question["answer"], bg="blue", fg="white", font=("Arial", 16))
+        answer_label = tk.Label(self.question_window, text=self.selected_question["answer"], bg=_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
         answer_label.pack(pady=20)
 
 if __name__ == "__main__":
