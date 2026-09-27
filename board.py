@@ -1,16 +1,26 @@
 import tkinter as tk
 from pathlib import Path
 import input_handler as ih
+import animation_handler as ah
 
 _EMPTY = " "
+_LINE_OFFSET = 3
+_SCORE_OFFSET = 0
 _NUMBER_OF_CATEGORIES = 6
 _NUMBER_OF_QUESTIONS = 5
 _BOARD_WIDTH = 1500
-_BOARD_HEIGHT = 800
-_BOARD_COLOR = "blue"
+_BOARD_HEIGHT = 800 + _LINE_OFFSET + _SCORE_OFFSET
+_QUESTION_BOARD_COLOR = "#0000FF"
+_CATEGORY_BOARD_COLOR = "#2222FF"
+_BASE_BOARD_COLOR = "#000000"
+_CATEGORY_TEXT_COLOR = "#FFFFFF"
+_VALUE_TEXT_COLOR = "#FFCC00"
+_VALUE_TEXT_OUTLINE_COLOR = "#000000"
+_BOARD_RECTANGLE_OUTLINE_WIDTH = 8
 _BOARD_DIMENSIONS = str(_BOARD_WIDTH) + "x" + str(_BOARD_HEIGHT)
 _RECTANGLE_WIDTH = _BOARD_WIDTH / _NUMBER_OF_CATEGORIES
-_RECTANGLE_HEIGHT = _BOARD_HEIGHT / (_NUMBER_OF_QUESTIONS + 1)  # +1 for category row
+_RECTANGLE_HEIGHT = (_BOARD_HEIGHT - _LINE_OFFSET - _SCORE_OFFSET) / (_NUMBER_OF_QUESTIONS + 1)  # +1 for category row
+
 
 class JeopardyBoard:
     def __init__(self, question_set):
@@ -74,9 +84,9 @@ class JeopardyBoard:
         root = tk.Tk()
         root.title("Jeopardy Board")
         root.geometry(_BOARD_DIMENSIONS)
-        root.configure(bg=_BOARD_COLOR)
+        root.configure(bg=_BASE_BOARD_COLOR)
         root.bind("<Key>", self.handle_key_press)
-        canvas = tk.Canvas(root, width=_BOARD_WIDTH, height=_BOARD_HEIGHT, bg=_BOARD_COLOR)
+        canvas = tk.Canvas(root, width=_BOARD_WIDTH, height=_BOARD_HEIGHT, bg=_BASE_BOARD_COLOR)
         canvas.pack()
         for i in range(_NUMBER_OF_CATEGORIES):
             for j in range(_NUMBER_OF_QUESTIONS + 1):  # +1 for category row
@@ -84,11 +94,12 @@ class JeopardyBoard:
                 y0 = j * _RECTANGLE_HEIGHT
                 x1 = x0 + _RECTANGLE_WIDTH
                 y1 = y0 + _RECTANGLE_HEIGHT
-                canvas.create_rectangle(x0, y0, x1, y1, outline="black", fill="blue", width=3)
                 if j == 0:  # Category row
-                    canvas.create_text((x0 + x1) / 2, (y0 + y1) / 2, text=self.board[i][j], fill="white", font=("Arial", 20))
+                    canvas.create_rectangle(x0, y0, x1, y1, outline="black", fill=_CATEGORY_BOARD_COLOR, width=_BOARD_RECTANGLE_OUTLINE_WIDTH)
+                    canvas.create_text((x0 + x1) / 2, (y0 + y1) / 2, text=self.board[i][j], fill=_CATEGORY_TEXT_COLOR, font=("Arial", 20), justify="center")
                 else:  # Question rows
-                    canvas.create_text((x0 + x1) / 2, (y0 + y1) / 2, text=f"${self.board[i][j]['value']}", fill="white", font=("Arial", 20))
+                    canvas.create_rectangle(x0 , y0 + _LINE_OFFSET, x1, y1 + _LINE_OFFSET, outline="black", fill=_QUESTION_BOARD_COLOR, width=_BOARD_RECTANGLE_OUTLINE_WIDTH)
+                    self.create_shadowed_text(canvas, (x0 + x1) / 2, (y0 + y1 + 2 * _LINE_OFFSET) / 2, text=f"${self.board[i][j]["value"]}", font=("Helvetica", 40, "bold"), fill_color=_VALUE_TEXT_COLOR, outline_color=_VALUE_TEXT_OUTLINE_COLOR)
         root.mainloop()
 
     def select_question(self, category_index, question_index):
@@ -100,15 +111,25 @@ class JeopardyBoard:
         self.question_window = tk.Toplevel()
         self.question_window.title("Question")
         self.question_window.geometry(_BOARD_DIMENSIONS)
-        self.question_window.configure(bg=_BOARD_COLOR)
-        question_label = tk.Label(self.question_window, text=self.selected_question["question"], bg=_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
+        self.question_window.configure(bg=_QUESTION_BOARD_COLOR)
+
+        question_label = tk.Label(self.question_window, text=self.selected_question["question"], bg=_QUESTION_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
         question_label.pack(pady=150)
         self.question_window.bind("<Key>", self.handle_key_press)
 
     def display_answer(self):
-        answer_label = tk.Label(self.question_window, text=self.selected_question["answer"], bg=_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
+        answer_label = ah.FadeInHandler(self.question_window, text=self.selected_question["answer"], bg=_QUESTION_BOARD_COLOR, font=("Arial", 40), wraplength=1000, justify="center")
         answer_label.pack(pady=20)
+        answer_label.start_fade()
 
+    def create_shadowed_text(self, canvas, x, y, text, font, fill_color, outline_color, outline_width=4):
+        for dx in range(0, outline_width + 1):
+            for dy in range(0, outline_width + 1):
+                if dx != 0 or dy != 0:
+                    canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
+        main_text = canvas.create_text(x, y, text=text, font=font, fill=fill_color)
+
+        
 if __name__ == "__main__":
     question_set = "questions.jeo"
     jeopardy_board = JeopardyBoard(question_set)
