@@ -2,22 +2,27 @@ C: cat 1
 Q: This airport in Washington, named for two cities, has one of the largest parking garages in the US—13,000 spaces and eight stories high.
 A: What is Sea-Tac?
 V: 100
+D: no
 
 Q: q01
 A: a01
 V: 200
+D: no
 
 Q: q02
 A: a02
 V: 300
+D: no
 
 Q: q03
 A: a03
 V: 400
+D: no
 
 Q: q04
 A: a04
 V: 500
+D: no
 
 
 
@@ -25,22 +30,27 @@ C: cat2
 Q: q10
 A: a10 a1 a1
 V: 100
+D: no
 
 Q: q11
 A: a11
 V: 200
+D: no
 
 Q: q12
 A: a12
 V: 300
+D: no
 
 Q: q13
 A: a13
 V: 400
+D: no
 
 Q: q14
 A: a14
 V: 500
+D: no
 
 
 
@@ -48,22 +58,27 @@ C: cat3
 Q: q20
 A: a20
 V: 100
+D: no
 
 Q: q21
 A: a21
 V: 200
+D: no
 
 Q: q22
 A: a22 a2345
 V: 300
+D: no
 
 Q: q23
 A: a23
 V: 400
+D: no
 
 Q: q24
 A: a24
 V: 500
+D: no
 
 
 
@@ -71,22 +86,27 @@ C: cat 4
 Q: q30
 A: a30
 V: 100
+D: no
 
 Q: q31
 A: a31
 V: 200
+D: no
 
 Q: q32
 A: a32
 V: 300
+D: no
 
 Q: q33
 A: a33
 V: 400
+D: yes
 
 Q: q34
 A: a34
 V: 500
+D: no
 
 
 
@@ -94,22 +114,27 @@ C: cat 5
 Q: q40
 A: a40
 V: 100
+D: no
 
 Q: q41
 A: a41
 V: 200
+D: no
 
 Q: q42
 A: a42
 V: 300
+D: no
 
 Q: q43
 A: a43
 V: 400
+D: no
 
 Q: q44
 A: a44
 V: 500
+D: no
 
 
 
@@ -117,19 +142,24 @@ C: cat 6
 Q: q50
 A: a50
 V: 100
+D: no
 
 Q: q51
 A: a51
 V: 200
+D: no
 
 Q: q52
 A: a52
 V: 300
+D: no
 
 Q: q53
 A: a53
 V: 400
+D: no
 
 Q: q54
 A: a54
 V: 500
+D: no
