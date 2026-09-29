@@ -14,13 +14,11 @@ class InputHandler:
 
         return int(self.key_dictionary[key].rsplit(" ", 1)[0]), int(self.key_dictionary[key].rsplit(" ", 1)[1])
 
-    def get_wager(self, key):
+    def make_wager(self, key):
+        print(f"Daily Double Key Pressed: {key}")
         if key.isdigit():
             self.current_wager += key
+            print(f"Current Wager: {self.current_wager}")
         elif key == "BackSpace":
             self.current_wager = self.current_wager[:-1]
-        elif key == "Return":
-            wager = int(self.current_wager) if self.current_wager else 0
-            self.current_wager = ""
-            return wager
 

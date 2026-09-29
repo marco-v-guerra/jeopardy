@@ -37,6 +37,8 @@ class JeopardyBoard:
         self.selected_question = {"question": "", "answer": "", "value": 0, "daily_double": False}
         self.question_window = None
         self.question_is_selected = False
+        self.daily_double_is_selected = False
+        self.daily_double_wager_submitted = False
         self.root = None
         self.canvas = None
         self.daily_double_window = None
@@ -75,17 +77,33 @@ class JeopardyBoard:
                                     "answer": self.answers[i * _NUMBER_OF_QUESTIONS + j - 1],
                                     "daily_double": self.daily_double[i * _NUMBER_OF_QUESTIONS + j - 1],
                                     "value": self.values[i * _NUMBER_OF_QUESTIONS + j - 1]}
+        
 
     def handle_key_press(self, event):
         input_handler = ih.InputHandler()
 
         if self.question_is_selected:
-            if event.keysym == "Return":  # If Enter is pressed, show the answer
-                self.display_answer()
-            elif event.keysym == "Escape":  # If Escape is pressed, close the question window
-                if self.question_window:
-                    self.question_window.destroy()
-                    self.question_is_selected = False
+            if self.daily_double_is_selected:
+                if not self.daily_double_wager_submitted:
+                    self.handle_daily_double_key_press(event.keysym)
+                    self.update_wager_display()
+                else:
+                    if event.keysym == "Return":  # If Enter is pressed, show the answer
+                        self.display_answer()
+                    elif event.keysym == "Escape":  # If Escape is pressed, close the question window
+                        if self.question_window:
+                            self.question_window.destroy()
+                            self.question_is_selected = False
+                            self.daily_double_is_selected = False
+                            self.daily_double_wager_submitted = False
+                
+            else:
+                if event.keysym == "Return":  # If Enter is pressed, show the answer
+                    self.display_answer()
+                elif event.keysym == "Escape":  # If Escape is pressed, close the question window
+                    if self.question_window:
+                        self.question_window.destroy()
+                        self.question_is_selected = False
         else:
             current_selection = input_handler.host_key_press(event.keysym)
             self.selected_category_index = current_selection[0]
@@ -97,6 +115,19 @@ class JeopardyBoard:
                 self.handle_daily_double()
             else:
                 self.display_question()
+
+    def handle_daily_double_key_press(self, key):
+        if key == "Escape":
+            self.daily_double_window.destroy()
+        elif key == "Return":
+            wager = self.current_player.wager
+            if wager is not None:
+                self.current_player.wager = wager
+                self.daily_double_wager_submitted = True
+                self.daily_double_window.destroy()
+                self.display_question()
+        elif key.isdigit() or key == "BackSpace":
+            self.current_player.make_wager(key)
 
     def create_board_display(self):
         # Create the main window
@@ -139,10 +170,6 @@ class JeopardyBoard:
                     if self.board[i][j] != _EMPTY:
                         self.create_shadowed_text(self.canvas, (x0 + x1) / 2, (y0 + y1 + 2 * _LINE_OFFSET) / 2, text=f"${self.board[i][j]["value"]}", font=("Helvetica", 40, "bold"), fill_color=_VALUE_TEXT_COLOR, outline_color=_VALUE_TEXT_OUTLINE_COLOR)
     
-    def display_board(self):
-        self.root.after(100, self.update_board_display())
-        self.root.mainloop()
-
     def select_question(self, category_index, question_index):
         self.selected_category_index = category_index
         self.selected_question_index = question_index
@@ -169,16 +196,34 @@ class JeopardyBoard:
         self.board[category_index][question_index + 1] = _EMPTY  # +1 to skip the category name
 
     def handle_daily_double(self):
+        # Set the flag to indicate that a Daily Double has been selected
+        self.daily_double_is_selected = True
+
+        self.display_daily_double()
+
+        self.daily_double_window.bind("<Key>", self.handle_key_press)
+
+    def display_daily_double(self):
         # Create a new window for the Daily Double
         self.daily_double_window = tk.Toplevel()
         self.daily_double_window.title("Daily Double")
         self.daily_double_window.geometry(_BOARD_DIMENSIONS)
         self.daily_double_window.configure(bg=_QUESTION_BOARD_COLOR)
-
+        
         # Add a label to display the Daily Double message
         question_label = tk.Label(self.daily_double_window, text="Daily Double! Enter your wager:", bg=_QUESTION_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
         question_label.pack(pady=150)
-        self.daily_double_window.bind("<Key>", self.current_player.get_wager) # Continue from here / WIP
+
+        # Add a label to display the current wager
+        wager = self.current_player.wager
+        self.daily_double_window.wager_label = tk.Label(self.daily_double_window, text=wager, bg=_QUESTION_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
+        self.daily_double_window.wager_label.pack(pady=20)
+
+    def update_wager_display(self):
+        self.daily_double_window.wager_label.destroy() # Remove the old wager label
+        wager = self.current_player.wager
+        self.daily_double_window.wager_label = tk.Label(self.daily_double_window, text=wager, bg=_QUESTION_BOARD_COLOR, fg="white", font=("Arial", 40), wraplength=1000, justify="center")
+        self.daily_double_window.wager_label.pack(pady=20)
 
     def handle_final_jeopardy(self):
         # Create a new window for Final Jeopardy
@@ -192,13 +237,14 @@ class JeopardyBoard:
             for dy in range(0, outline_width + 1):
                 if dx != 0 or dy != 0:
                     canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
-        main_text = canvas.create_text(x, y, text=text, font=font, fill=fill_color)
+        canvas.create_text(x, y, text=text, font=font, fill=fill_color)
 
         
 if __name__ == "__main__":
     question_set = "questions.jeo"
+    player1 = jp.Player("Player 1")
     jeopardy_board = JeopardyBoard(question_set)
-    jeopardy_board.display_board()
+    #jeopardy_board.display_board()
     #jeopardy_board.display_question()
     #print(jeopardy_board.board[1][1]["question"])  # Print the first question
     #print(jeopardy_board.board)
